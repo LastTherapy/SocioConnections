@@ -1,5 +1,5 @@
-TOKEN = "5452719544:AAFLpPzKYYUMPxwsMJPrWi4jOGezkiNQlBs"
-DATABASE_URL = 'postgres://postgres:3454325@localhost/SocioConnection'
+TOKEN = ""
+DATABASE_URL = 'postgres://user:password@localhost/SocioConnection'
 MEDIA_STORAGE = 'media/'
 db_credentials = {
     'user': 'имя_пользователя',
