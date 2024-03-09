@@ -4,7 +4,7 @@
 DB_NAME="SocioConnection"
 DB_USER="postgres"  # Имя пользователя базы данных
 DB_PASSWORD="3454325"  # Пароль для доступа к базе данных
-BACKUP_DIR="backup"  # Путь к директории для сохранения бэкапов
+BACKUP_DIR="/home/hellomind/github/TBOTS/SocioConnection/backup"  # Путь к директории для сохранения бэкапов
 
 # Текущая дата для имени файла бэкапа
 CURRENT_DATE=$(date +%Y.%m.%d_%H:%M)

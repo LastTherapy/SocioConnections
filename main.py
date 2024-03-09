@@ -239,6 +239,8 @@ async def voice_recognition(message: Message, model: str = 'small'):
         result = VoiceRecognition.recognition(destination_file, model)
     except Exception:
         result = "Sorry, no more GPU memory available for neuro SocioNyash. Error(("
+    if len(result) == 0:
+        result = "Sorry, no text in voice recognition."
     if len(result) < 4096:
         await bot.edit_message_text(result, chat_id=message.chat.id, message_id=recognized.message_id)
     else:
