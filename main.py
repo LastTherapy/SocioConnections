@@ -561,5 +561,5 @@ async def main() -> None:
 
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.INFO, filename='updates.log', filemode='a')
+    logging.basicConfig(level=logging.INFO, filename='updates.log', filemode='a', format='%(asctime)s - %(levelname)s - %(message)s')
     asyncio.run(main())
