@@ -3,7 +3,8 @@ import asyncio
 import logging
 import sys
 from os import getenv
-
+from collections import defaultdict
+from datetime import datetime
 import aiogram.types
 from aiogram import Bot, Dispatcher, Router, types
 from aiogram.enums import ParseMode
@@ -18,8 +19,8 @@ from settings import TOKEN, MEDIA_STORAGE, VOICE_SRORAGE
 from aiogram import F
 from aiogram.types import FSInputFile, ContentType, ReactionTypeEmoji, CallbackQuery
 import DatabaseClient
-import VoiceRecognition
-import User
+# import VoiceRecognition
+
 
 # Инициализация бота и диспетчера
 bot = Bot(TOKEN, parse_mode=ParseMode.HTML)
@@ -138,11 +139,38 @@ async def settings_chats(message: Message) -> None:
 
 import  Statistic  #переместить
 
-@dp.message(Command("stats", ignore_case=True))
+@dp.message(Command("mystats", ignore_case=True))
 async def show_personal_pot(message: Message) -> None:
     dates, counts = await dbclient.get_message_count_by_user(user_id=message.from_user.id, chat_id=message.chat.id)
     path = await Statistic.plot_message_count_graph(dates, counts,
                                                     user_name=message.from_user.first_name, chat_name=message.chat.title)
+    print("personal stats called")
+    # Рассчитываем среднее количество сообщений
+    average_count = sum(counts) / len(counts) if counts else 0
+
+    # Сгруппируем количество сообщений по дням недели
+    day_counts = defaultdict(list)
+    for date, count in zip(dates, counts):
+        day = date.strftime('%A')
+        day_counts[day].append(count)
+
+    # Рассчитываем среднее количество сообщений для каждого дня недели
+    day_averages = {day: sum(day_counts[day]) / len(day_counts[day]) for day in day_counts}
+
+    # Находим день с максимальным и минимальным средним количеством сообщений
+    max_day = max(day_averages, key=day_averages.get)
+    min_day = min(day_averages, key=day_averages.get)
+
+    stats_message = (f"Среднее количество сообщений в день: {average_count:.2f}\n"
+                     f"Больше всего сообщений в среднем: {max_day} ({day_averages[max_day]:.2f})\n"
+                     f"Меньше всего сообщений в среднем: {min_day} ({day_averages[min_day]:.2f})")
+
+    await bot.send_photo(chat_id=message.chat.id, photo=FSInputFile(path), caption=stats_message)
+
+@dp.message(Command("stats", ignore_case=True))
+async def show_personal_pot(message: Message) -> None:
+    dates, counts = await dbclient.get_message_count_by_chat(chat_id=message.chat.id)
+    path = await Statistic.plot_message_count_chat(dates, counts, chat_name=message.chat.title)
     print("stats called")
     await bot.send_photo(chat_id=message.chat.id, photo=FSInputFile(path))
 
@@ -170,7 +198,7 @@ async def change_voice_settings(callback: CallbackQuery):
     anon_marker = '✅ Да' if anon_posting else '❌ Нет'
     description = f"""
     Настройки чата:
-    Автоматически распознавать голосовые: {voice_marker}
+    (Недоступно) Автоматически распознавать голосовые: {voice_marker}
     Отправка анонимных сообщений в чат: {anon_marker}
     Приватные категории этого чата: {pt}
     """
@@ -185,46 +213,47 @@ async def change_voice_settings(callback: CallbackQuery):
 
 @dp.message(Command("v", "voice", ignore_case=True))
 async def command_start_handler(message: Message) -> None:
+    await message.answer('Распознавание голоса пока отключено')
+#     help_text = """
+#     Use /v or /voice in your message reply to do speech recognition. 
+# You can specify the model type with another word, for example, - "/v base". 
+# The available models are (parameters): tiny (39M), base (74M), small (244M), medium (769M), and large (1550M). 
+# Be aware that the large model is slower than Slow. 
+# By default, I will use the small one.
+# You can also turn on or off automatic voice recognition in the chat settings by typing /settings.
+# Using Whisper pretrained model by OpenAI.
+#     """
+#     if message.reply_to_message is None:
+#         image = FSInputFile("whisper.png")
+#         await bot.send_photo(chat_id=message.chat.id, photo=image, caption=help_text)
+#         # await message.answer(help_text)
+#         return
 
-    help_text = """
-    Use /v or /voice in your message reply to do speech recognition. 
-You can specify the model type with another word, for example, - "/v base". 
-The available models are (parameters): tiny (39M), base (74M), small (244M), medium (769M), and large (1550M). 
-Be aware that the large model is slower than Slow. 
-By default, I will use the small one.
-You can also turn on or off automatic voice recognition in the chat settings by typing /settings.
-Using Whisper pretrained model by OpenAI.
-    """
-    if message.reply_to_message is None:
-        image = FSInputFile("whisper.png")
-        await bot.send_photo(chat_id=message.chat.id, photo=image, caption=help_text)
-        # await message.answer(help_text)
-        return
-
-    message_text = message.text.lower().split()
-    if len(message_text) > 1:
-        arg = message_text[1]
-        if arg == 'help':
-            image = FSInputFile("whisper.png")
-            await bot.send_photo(chat_id=message.chat.id, photo=image, caption=help_text)
-            # await message.answer(help_text)
-            return
-        else:
-            await voice_recognition(message.reply_to_message, arg)
-            return
-    else:
-        await voice_recognition(message.reply_to_message)
-        return
+#     message_text = message.text.lower().split()
+#     if len(message_text) > 1:
+#         arg = message_text[1]
+#         if arg == 'help':
+#             image = FSInputFile("whisper.png")
+#             await bot.send_photo(chat_id=message.chat.id, photo=image, caption=help_text)
+#             # await message.answer(help_text)
+#             return
+#         else:
+#             await voice_recognition(message.reply_to_message, arg)
+#             return
+#     else:
+#         await voice_recognition(message.reply_to_message)
+#         return
 
 
 @dp.message(F.content_type.in_({'voice'}))
 async def auto_voice_recognition(message: Message):
-    auto_voice, anon_posting = await dbclient.get_chat_settings(message)
-    if not auto_voice:
-        print("Auto audio off for this chat")
-        return
-    else:
-        await voice_recognition(message)
+    pass
+    # auto_voice, anon_posting = await dbclient.get_chat_settings(message)
+    # if not auto_voice:
+    #     print("Auto audio off for this chat")
+    #     return
+    # else:
+    #     await voice_recognition(message)
 
 async def voice_recognition(message: Message, model: str = 'small'):
     voice_id = message.voice.file_id

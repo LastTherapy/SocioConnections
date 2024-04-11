@@ -11,7 +11,7 @@ if PASSWORD is None:
 HOST = 'localhost'
 if HOST is None:
     HOST = input("Enter your database address: ")
-DATABASE = 'SocioConnection'
+DATABASE = 'socioconnection'
 if DATABASE is None:
     DATABASE = input("Enter your database database name: ")
 

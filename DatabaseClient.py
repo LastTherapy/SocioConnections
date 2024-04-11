@@ -61,30 +61,7 @@ class DatabaseClient:
                 }
             else:
                 return None
-    # async def find_random_image_by_tag(self, tag):
-    #     async with self.pool.acquire() as conn:
-    #         image_record = await conn.fetchrow(
-    #             '''
-    #             SELECT i.id as image_id, i.name as image_path, t.name as tag_name,
-    #             i.caption, i.image_telegram_id, t.spoiler
-    #             FROM images i
-    #             JOIN image_tags it ON i.id = it.image_id
-    #             JOIN tags t ON t.id = it.tag_id
-    #             WHERE t.name = $1
-    #             ORDER BY RANDOM() LIMIT 1
-    #             ''', tag)
-    #
-    #         if image_record:
-    #             return {
-    #                 'image_id': image_record['image_id'],
-    #                 'image_path': image_record['image_path'],
-    #                 'tag_name': image_record['tag_name'],
-    #                 'caption': image_record['caption'],
-    #                 'image_telegram_id': image_record['image_telegram_id'],
-    #                 'spoiler': image_record['spoiler']
-    #             }
-    #         else:
-    #             return None
+
 
     async def get_tags_of_image(self, image_name):
         async with self.pool.acquire() as conn:
@@ -116,29 +93,6 @@ class DatabaseClient:
                """
             rows = await conn.fetch(query, message.from_user.id)
             return rows
-
-
-    # async def update_anon_chats_by_user(self, message: aiogram.types.Message, new_anon_chats: list):
-    #     async with self.pool.acquire() as conn:
-    #         query = """
-    #                 UPDATE chats
-    #                 SET anon_chats = $1
-    #                 WHERE chat_id = $2
-    #                """
-    #         await conn.execute(query, new_anon_chats, message.chat.id)
-
-    # async def get_anon_chats_by_user(self, message: aiogram.types.Message) -> list:
-    #     async with self.pool.acquire() as conn:
-    #         query = """
-    #                 SELECT anon_chats
-    #                 FROM chats
-    #                 WHERE chat_id = $1 AND type = 'private'
-    #                """
-    #         row = await conn.fetchrow(query, message.chat.id)
-    #         if row and row['anon_chats'] is not None:
-    #             return row['anon_chats']
-    #         else:
-    #             return []
 
     async def add_chat_record(self, message: aiogram.types.Message):
         # await self.connect()
@@ -429,16 +383,32 @@ class DatabaseClient:
                 ORDER BY DATE(update_date)
                 ''', user_id, chat_id
             )
-            # Преобразование данных
+            # Преобразование данных+
             dates = [record['date'] for record in records]
             counts = [record['message_count'] for record in records]
             return dates, counts
 
+    async def get_message_count_by_chat(self, chat_id: int):
+        async with self.pool.acquire() as conn:
+            records = await conn.fetch(
+                '''
+                SELECT DATE(update_date) as date, COUNT(*) as message_count
+                FROM messages
+                WHERE  chat_id = $1
+                AND update_date >= NOW() - INTERVAL '30 days'
+                GROUP BY DATE(update_date)
+                ORDER BY DATE(update_date)
+                ''', chat_id
+            )
+            # Преобразование данных+
+            dates = [record['date'] for record in records]
+            counts = [record['message_count'] for record in records]
+            return dates, counts
 
-    async def close(self):
-        if self.conn:
-            await self.conn.close()
-        if self.pool:
-            await self.pool.close()
+async def close(self):
+    if self.conn:
+        await self.conn.close()
+    if self.pool:
+        await self.pool.close()
 
 # Пример использования
