@@ -138,14 +138,14 @@ class DatabaseClient:
             update_date = message.date.now()
             content_type = message.content_type
             file_id = message.sticker.file_id if content_type == 'sticker' else None
+            caption = message.caption
 
             await conn.execute(
                 '''
-                INSERT INTO messages (message_id, chat_id, from_user_id, reply_to_message, quote, text, update_date, content_type, file_id)
-                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-                ON CONFLICT (message_id) DO NOTHING
+                INSERT INTO messages (message_id, chat_id, from_user_id, reply_to_message, quote, text, update_date, content_type, file_id, caption)
+                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)               
                 ''',
-                message_id, chat_id, from_user_id, reply_to_message, quote, text,  update_date, content_type, file_id
+                message_id, chat_id, from_user_id, reply_to_message, quote, text,  update_date, content_type, file_id, caption
             )
 
     async def update_image_telegram_id(self, image_id, telegram_image_id):
