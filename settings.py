@@ -1,4 +1,6 @@
 TOKEN = "5452719544:AAFLpPzKYYUMPxwsMJPrWi4jOGezkiNQlBs"
+TEST_TOKEN = "5362395639:AAH6u2wMYjUfdkki8VVaGbsEAlTps9dQx4w"
+
 if TOKEN is None:
     TOKEN = input("Enter your bot TOKEN: ")
 USER = 'postgres'
@@ -16,13 +18,14 @@ if DATABASE is None:
     DATABASE = input("Enter your database database name: ")
 
 DATABASE_URL = f'postgres://{USER}:{PASSWORD}@{HOST}/{DATABASE}?'
+TEST_DATABASE_URL = f'postgres://{USER}:{PASSWORD}@{HOST}/testsocioconnection?'
 MEDIA_STORAGE = 'media/'
-db_credentials = {
-    'user': USER,
-    'password': PASSWORD,
-    'database': DATABASE,
-    'host': HOST,  # Например, 'localhost' или IP-адрес
-    # 'port': 5432,  # Необязательно, если используется стандартный порт
-}
+# db_credentials = {
+#     'user': USER,
+#     'password': PASSWORD,
+#     'database': DATABASE,
+#     'host': HOST,  # Например, 'localhost' или IP-адрес
+#     # 'port': 5432,  # Необязательно, если используется стандартный порт
+# }
 VOICE_SRORAGE = 'voice/'
 GRAPH_STORAGE = 'graph/'

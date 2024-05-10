@@ -473,7 +473,7 @@ async def image_handler(message: types.Message) -> None:
 
 @dp.message()
 async def all_handler(message: types.Message) -> None:
-    print('trying to add record in postgres database')
+    print('trying to add record in postgres database', message.text)
     if message.text is not None:
         if "соционяш" in message.text.lower() in message.text.lower():
             print("socionyasha mentioned")

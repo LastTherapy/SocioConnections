@@ -1,6 +1,6 @@
 import aiogram.types
 import asyncpg
-from settings import DATABASE_URL
+from settings import TEST_DATABASE_URL as DATABASE_URL
 import random
 from datetime import datetime
 from aiogram.types.user_profile_photos import UserProfilePhotos
@@ -9,6 +9,7 @@ from aiogram.types.user_profile_photos import UserProfilePhotos
 class DatabaseClient:
     def __init__(self):
         self.connection_string = DATABASE_URL
+        print(f"connected to {DATABASE_URL} database")
         self.conn = None
         self.pool = None
 
@@ -126,6 +127,7 @@ class DatabaseClient:
                 person_id, name, lastname, username,  update_date
             )
 
+    # edited
     async def add_message_record(self, message: aiogram.types.Message) -> None:        
         async with self.pool.acquire() as conn:
             message_id: int = message.message_id
@@ -147,27 +149,6 @@ class DatabaseClient:
                 ''',
                 message_id, chat_id, from_user_id, reply_to_message, text,  date, content_type, file_id, is_forwarded
             )
-    # async def add_message_record(self, message: aiogram.types.Message) -> None:
-    #     # await self.connect()
-    #     async with self.pool.acquire() as conn:
-    #         message_id = message.message_id
-    #         chat_id = message.chat.id
-    #         from_user_id = message.from_user.id
-    #         reply_to_message = message.reply_to_message.message_id if message.reply_to_message else None
-    #         quote = message.quote.text if message.quote else None
-    #         text = message.text
-    #         update_date = message.date.now()
-    #         content_type = message.content_type
-    #         file_id = message.sticker.file_id if content_type == 'sticker' else None
-    #         caption = message.caption
-
-    #         await conn.execute(
-    #             '''
-    #             INSERT INTO messages (message_id, chat_id, from_user_id, reply_to_message, quote, text, update_date, content_type, file_id)
-    #             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)               
-    #             ''',
-    #             message_id, chat_id, from_user_id, reply_to_message, quote, text,  update_date, content_type, file_id, caption
-    #         )
 
     async def update_image_telegram_id(self, image_id, telegram_image_id):
         async with self.pool.acquire() as conn:
@@ -425,14 +406,14 @@ class DatabaseClient:
             dates = [record['date'] for record in records]
             counts = [record['message_count'] for record in records]
             return dates, counts
-    
+
     async def execute_script(self, path: str):
         async with self.pool.acquire() as conn:
             with open(path, 'r', encoding='utf-8') as file:
                 sql_script = file.read()
                 try:
                     await conn.execute(sql_script)
-                    print("SQL script has been executed successfully.")
+                    print(f"SQL {path} script has been executed successfully.")
                 except Exception as e:
                     print(f"An error occurred: {e}")
 
