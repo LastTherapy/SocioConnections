@@ -437,6 +437,7 @@ async def image_handler(message: types.Message) -> None:
     tag = message_text[0][1:]  # Получаем тег, удаляя первый символ '#'
     args = message_text[1] if len(message_text) > 1 else None
     print(tag + ' called')
+    print('я внес изменения')
     if tag == 'rand' or tag == 'random':
         await random_image(message)
         return
@@ -472,11 +473,13 @@ async def image_handler(message: types.Message) -> None:
 
 @dp.message()
 async def all_handler(message: types.Message) -> None:
+    print('trying to add record in postgres database', message.text)
     if message.text is not None:
         if "соционяш" in message.text.lower() in message.text.lower():
             print("socionyasha mentioned")
             await bot.set_message_reaction(chat_id=message.chat.id, message_id=message.message_id,
                                        reaction=[ReactionTypeEmoji(emoji="❤")])
+    
     await dbclient.add_chat_record(message)
     await dbclient.add_person_record(message)
     await dbclient.add_message_record(message)
