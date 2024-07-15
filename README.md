@@ -1,2 +1,2 @@
-# socioconnections
+# SocioConnections
 Telegram bot
